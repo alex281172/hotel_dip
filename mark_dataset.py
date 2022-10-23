@@ -1,18 +1,16 @@
-import json
-import random
-
 from pymorphy2 import MorphAnalyzer
-from nltk.corpus import stopwords
 import numpy as np
 import pandas as pd
-import re
 import nltk
 
-# загрузка модулей nltk
+from normalize import normalize_text
+
 nltk.download('punkt')
 nltk.download('stopwords')
 # морфологический анализатор для русского языка
 morph = MorphAnalyzer()
+
+# считываем датасет
 
 df = pd.read_csv('data.csv')
 print(df.head())
@@ -22,29 +20,16 @@ df.columns = ['text']
 df = df.dropna()
 print(df.text)
 
-# подгружаем стоп слова для русского языка
-stopwords_ru = stopwords.words("russian")
-
-
-# нормализация текстов
-def normalize_text(text, stop_words=False):
-    # токенизация и приведение к нижнему регистру
-    text = nltk.word_tokenize(text.lower())
-    # лемматизация
-    text = [morph.normal_forms(token)[0] for token in text]
-    # удаление стоп-слов
-    if stop_words:
-        text = [token for token in text if token not in stopwords_ru]
-    return " ".join(text)
-
+# нормализируем текст
 
 df["normal_text"] = [normalize_text(text, stop_words=True) for text in df.text]
-print(df.normal_text)
-print('----------------')
-print(df.text)
-print('++++++++++++++++')
 
-# векторизуем наши запросы
+print(df.normal_text)
+
+print(df.head())
+
+# считаем векторное сходство фраз
+
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 """
@@ -57,11 +42,16 @@ text_embeddings = vectorizer.fit_transform(df.text)
 
 print(text_embeddings)
 
-# импорт кластеризаторов из sklearn
+# кластеризируем данные
+
+# KMeans
+
+# MiniBatchKMeans
+
 from sklearn.cluster import KMeans, MiniBatchKMeans
 
 
-def cluster_kmeans(num_clusters, embeddings, init="k-means++", random_state=42):
+def cluster_kmeans(num_clusters, embeddings, init='k-means++', random_state=42):
     clustering_model = KMeans(n_clusters=num_clusters, init=init, n_init=100, random_state=random_state)
     clusters = clustering_model.fit_predict(embeddings)
     return clusters
@@ -74,12 +64,15 @@ def cluster_miniBatchKMeans(num_clusters, embeddings, init_size=16, batch_size=1
     return clusters
 
 
-# число кластеров
 num_clusters = 5
+
 kmeans = cluster_kmeans(num_clusters, text_embeddings)
+
 miniBatchKMeans = cluster_miniBatchKMeans(num_clusters, text_embeddings)
 
 print(kmeans)
+
+# визуализация
 
 # импорт библиотек для визулизации кластеров
 from sklearn.decomposition import PCA
@@ -114,6 +107,8 @@ plot_tsne_pca(text_embeddings, kmeans)
 plot_tsne_pca(text_embeddings, miniBatchKMeans)
 
 
+# находим самые частые слова в каждом кластере
+
 def get_top_keywords(data, clusters, labels, n_terms):
     df = pd.DataFrame(data.todense()).groupby(clusters).mean()
     top_keywords = []
@@ -123,29 +118,30 @@ def get_top_keywords(data, clusters, labels, n_terms):
         l.sort()
         print(','.join(l))
         top_keywords.append(','.join(l))
+
     return top_keywords
 
 
-# кол-во самых частотных слов
 top_words = 1
 cluster_names = get_top_keywords(text_embeddings, kmeans, vectorizer.get_feature_names(), top_words)
+print(cluster_names)
+
+# собираем кластеры в удобный нам вид
 
 clustered_sentences = [[] for i in range(num_clusters)]
+
+df["label"] = ["" for _ in range(len(df.text))]
+
 for sentence_id, cluster_id in enumerate(kmeans):
     clustered_sentences[cluster_id].append(df.text[sentence_id])
+    df.label[sentence_id] = cluster_names[cluster_id]
 
-for i, cluster in enumerate(clustered_sentences):
+print(df.head())
+
+# выводим их
+
+for i in range(len(clustered_sentences)):
     print(cluster_names[i])
-    print(cluster)
-    print("")
+    print(clustered_sentences[i])
 
-with open("marketed_dataset.json", "w") as outfile:
-    json.dump({cluster_names[i]: cluster for i, cluster in enumerate(clustered_sentences)}, outfile, ensure_ascii=False)
-
-from sklearn.model_selection import train_test_split
-
-# Разделение датасета на train и test
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=12)
-
-
-
+df.to_csv("data_marketed.csv")
