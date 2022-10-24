@@ -27,4 +27,5 @@ def get_intent(text):
         return model.predict(vector)[0]
 
 
-print(get_intent("у вас парковка закрывается на обед"))
+if __name__ == '__main__':
+    print(get_intent("у вас парковка закрывается на обед"))
