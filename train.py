@@ -64,13 +64,13 @@ def find_optimal_k(X_train, y_train, max_k):
     ax.set_ylabel('Accuracy')
     ax.set_title('Accuracy by K')
 
-    f.show()
+    plt.show()
 
 
 max_k = 10
 find_optimal_k(X_train, y_train, max_k)
 
-n_neighbors = 4
+n_neighbors = 5
 knn = KNeighborsClassifier(n_neighbors=n_neighbors)
 knn.fit(X_train, y_train)
 print(knn.score(X_test, y_test))

@@ -42,12 +42,15 @@ async def main_state_handler(message: types.Message, state: FSMContext):
     intent = get_intent_callback(message.text)
 
     messages_from_intent = {
+        "start": "hello",
+        "стоянка": "intent_parking",
         "парковка": "intent_parking",
         "время": "intent_time",
-        "номера": "intent_rooms",
-        "услуги": "intent_services",
+        "номер": "intent_rooms",
+        "услуга": "intent_services",
         "забронировать": "intent_reservation",
     }
+
 
     if intent in messages_from_intent:
         await message.answer(get_message_text(messages_from_intent[intent]))

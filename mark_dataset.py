@@ -6,26 +6,30 @@ import nltk
 from normalize import normalize_text
 
 nltk.download('punkt')
-nltk.download('stopwords')
+from nltk.corpus import stopwords
 # морфологический анализатор для русского языка
 morph = MorphAnalyzer()
+stopwords_ru = stopwords.words("russian")
+
 
 # считываем датасет
 
 df = pd.read_csv('data.csv')
+print('-------------------df.head()--------------------------')
 print(df.head())
 
 df = df[['query']]
 df.columns = ['text']
 df = df.dropna()
+print('-------------------df.text--------------------------')
 print(df.text)
 
 # нормализируем текст
 
 df["normal_text"] = [normalize_text(text, stop_words=True) for text in df.text]
-
+print('-------------------df.normal_text--------------------------')
 print(df.normal_text)
-
+print('-------------------df.head()--------------------------')
 print(df.head())
 
 # считаем векторное сходство фраз
@@ -38,9 +42,13 @@ TfidfVectorizer() работает следующим образов:
 2. трансформирует полученные эмбеддинги, применяя tf*idf
 """
 vectorizer = TfidfVectorizer()
-text_embeddings = vectorizer.fit_transform(df.text)
-
+text_embeddings_my = vectorizer.fit_transform(df.text)
+text_embeddings = vectorizer.fit_transform(df.normal_text)
+print('-------------------text_embeddings_my--------------------------')
+print(text_embeddings_my)
+print('-------------------text_embeddings--------------------------')
 print(text_embeddings)
+print('-------------------****************--------------------------')
 
 # кластеризируем данные
 
@@ -64,7 +72,7 @@ def cluster_miniBatchKMeans(num_clusters, embeddings, init_size=16, batch_size=1
     return clusters
 
 
-num_clusters = 5
+num_clusters = 6
 
 kmeans = cluster_kmeans(num_clusters, text_embeddings)
 
@@ -100,7 +108,7 @@ def plot_tsne_pca(embeddings, labels):
     ax[1].scatter(tsne[idx, 0], tsne[idx, 1], c=label_subset)
     ax[1].set_title('TSNE')
 
-    f.show()
+    plt.show()
 
 
 plot_tsne_pca(text_embeddings, kmeans)
@@ -145,3 +153,4 @@ for i in range(len(clustered_sentences)):
     print(clustered_sentences[i])
 
 df.to_csv("data_marketed.csv")
+
