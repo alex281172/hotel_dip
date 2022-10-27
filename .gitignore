@@ -3,5 +3,4 @@ marketed_dataset.json
 venv
 data_marketed.csv
 logref_model.sav
-vectorizer.pk
 states.json
