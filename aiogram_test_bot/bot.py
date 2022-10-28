@@ -136,20 +136,11 @@ async def main_state_handler(message: types.Message, state: FSMContext):
 
 
 @dp.callback_query_handler(text_startswith="забронировать", state=StateMachine.main_state)
-
 async def main_state_handler(call: types.CallbackQuery, state: FSMContext):
     intent = get_intent_callback(call.data)
-
     messages_from_intent = {
-        "start": "hello",
-        "стоянка": "intent_parking",
-        "парковка": "intent_parking",
-        "время": "intent_time",
-        "номер": "intent_rooms",
-        "услуга": "intent_services",
         "забронировать": "intent_reservation",
     }
-    print('YES2')
     await call.message.answer(get_message_text(messages_from_intent[intent]))
     await StateMachine.main_state.set()
 

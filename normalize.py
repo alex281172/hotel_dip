@@ -9,9 +9,7 @@ morph = MorphAnalyzer()
 
 # подгружаем стоп слова для русского языка
 stopwords_ru = stopwords.words("russian")
-
 my_stopwords_ru = ['какой', 'какие', 'какое', 'какая']
-
 stopwords_ru = stopwords_ru + my_stopwords_ru
 
 def normalize_text(text, stop_words=False):
