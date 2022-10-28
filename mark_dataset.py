@@ -72,7 +72,7 @@ def cluster_miniBatchKMeans(num_clusters, embeddings, init_size=16, batch_size=1
     return clusters
 
 
-num_clusters = 6
+num_clusters = 7
 
 kmeans = cluster_kmeans(num_clusters, text_embeddings)
 

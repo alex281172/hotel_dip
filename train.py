@@ -67,10 +67,10 @@ def find_optimal_k(X_train, y_train, max_k):
     plt.show()
 
 
-max_k = 10
+max_k = 20
 find_optimal_k(X_train, y_train, max_k)
 
-n_neighbors = 5
+n_neighbors = 8
 knn = KNeighborsClassifier(n_neighbors=n_neighbors)
 knn.fit(X_train, y_train)
 print(knn.score(X_test, y_test))
